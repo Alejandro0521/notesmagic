@@ -57,15 +57,49 @@ const AISolver = (() => {
       });
     }
 
-    // Botón de resolución directa en el panel de la derecha
-    ensureBind('btn-solve-direct', 'click', () => {
-      const input = document.getElementById('direct-math-input');
-      if (input && input.value.trim()) {
-        solveLocalEquationText(input.value.trim());
-      } else {
-        alert('Por favor escribe una ecuación matemática válida.');
+    // Botón de resolución directa - bind directo
+    const btnSolveDirect = document.getElementById('btn-solve-direct');
+    const directMathInput = document.getElementById('direct-math-input');
+    
+    const attachResolveListeners = (btn, input) => {
+      if (btn) {
+        btn.addEventListener('click', () => {
+          if (input && input.value.trim()) {
+            solveLocalEquationText(input.value.trim());
+          } else {
+            alert('Por favor escribe una ecuación matemática válida.');
+          }
+        });
       }
-    });
+      if (input) {
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' && btn) {
+            btn.click();
+          }
+        });
+      }
+    };
+    
+    // Attach listeners now if elements exist
+    if (btnSolveDirect && directMathInput) {
+      attachResolveListeners(btnSolveDirect, directMathInput);
+    }
+    
+    // Fallback: retry binding after DOM ready
+    if (typeof window !== 'undefined' && (!btnSolveDirect || !directMathInput)) {
+      const retryBind = () => {
+        const btn = document.getElementById('btn-solve-direct');
+        const inp = document.getElementById('direct-math-input');
+        if (btn && inp && !btn.__bound) {
+          btn.__bound = true;
+          attachResolveListeners(btn, inp);
+        }
+      };
+      setTimeout(retryBind, 100);
+      setTimeout(retryBind, 500);
+      setTimeout(retryBind, 1000);
+      document.addEventListener('DOMContentLoaded', retryBind);
+    }
   }
 
   // Helper que intenta usar global `safeBind`, y si no está disponible
@@ -261,21 +295,28 @@ const AISolver = (() => {
       return;
     }
 
+    console.log('[AI Solver] Starting resolution for:', equationText);
     showLoading();
     document.getElementById('loading-subtext').innerText = `Analizando: ${equationText}...`;
 
     try {
       const response = await fetchOllamaAPI(equationText);
+      console.log('[AI Solver] Got response:', response);
+      
       if (response && response.solution_steps && response.solution_steps.length > 0) {
+        console.log('[AI Solver] Rendering solution');
         renderSolution(response);
       } else {
         throw new Error("Formato de respuesta inválido");
       }
     } catch (error) {
-      console.warn("Ollama falló, usando demo local:", error.message);
+      console.warn('[AI Solver] Ollama failed, using local mock:', error.message);
+      document.getElementById('loading-subtext').innerText = 'Usando demostración local (sin Ollama)...';
       
-      // Fallback: usar mock inteligente inmediatamente (sin espera)
+      // Fallback: usar mock inteligente
+      await new Promise(resolve => setTimeout(resolve, 400));
       const localMock = getMockResolution(equationText);
+      console.log('[AI Solver] Rendering mock solution:', localMock);
       renderSolution(localMock);
     }
   }
