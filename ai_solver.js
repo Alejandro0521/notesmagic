@@ -180,7 +180,7 @@ const AISolver = (() => {
     showDemoConfirmationUI(imageBase64);
   }
 
-  // Mostrar panel para digitar la ecuación dibujada (sin conexión a Ollama)
+  // Mostrar solo la imagen del dibujo (sin input ni resolución automática)
   function showDemoConfirmationUI(imageBase64) {
     const sidebar = document.getElementById('sidebar-right');
     const empty = document.getElementById('ai-empty-state');
@@ -189,56 +189,16 @@ const AISolver = (() => {
 
     if (sidebar) sidebar.classList.remove('collapsed');
     
-    // Simple input field for user to type the equation they drew
+    // Solo mostrar la imagen del dibujo
     if (empty) {
       empty.innerHTML = `
         <div class="result-card w-full" style="background: white; padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-sm); display:flex; flex-direction:column; gap:8px;">
-          <span class="card-label" style="color: var(--primary);">Tu dibujo:</span>
-          <div style="background:#f8fafc; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:10px; border:1px solid var(--border-color); height: 110px;">
+          <span class="card-label" style="color: var(--primary);">Tu dibujo capturado:</span>
+          <div style="background:#f8fafc; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:10px; border:1px solid var(--border-color); min-height: 140px;">
             <img src="${imageBase64}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:4px; filter: contrast(1.1);">
           </div>
-          <input id="ai-equation-input" type="text" placeholder="ej: 3x + 5 = 20" style="padding:8px 12px; border:1px solid var(--border-color); border-radius:8px; font-size:14px; font-family: 'Fira Code', monospace;">
-          <button id="ai-solve-btn" style="padding:10px 16px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:14px; transition: opacity 0.2s;">
-            Resolver
-          </button>
-          <p style="font-size:12px; color:#666; text-align:center; margin:0;">📝 Escribe la ecuación que viste en tu dibujo</p>
         </div>
       `;
-      
-      // Attach event listener
-      const solveBtn = document.getElementById('ai-solve-btn');
-      const inputField = document.getElementById('ai-equation-input');
-      
-      if (solveBtn && inputField) {
-        const handleSolve = async () => {
-          const equation = inputField.value.trim();
-          if (!equation) return;
-          
-          solveBtn.disabled = true;
-          solveBtn.style.opacity = '0.5';
-          solveBtn.innerText = 'Resolviendo...';
-          
-          try {
-            await solveLocalEquationText(equation);
-          } catch (error) {
-            console.error("Error al resolver:", error);
-            solveBtn.disabled = false;
-            solveBtn.style.opacity = '1';
-            solveBtn.innerText = 'Resolver';
-            alertFloatingTip("Error. Intenta de nuevo.");
-          }
-        };
-        
-        solveBtn.addEventListener('click', handleSolve);
-        
-        inputField.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter' && !solveBtn.disabled) {
-            handleSolve();
-          }
-        });
-        
-        inputField.focus();
-      }
     }
 
     if (empty) empty.classList.remove('hidden');
