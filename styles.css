@@ -1,0 +1,1906 @@
+/* ==========================================================================
+   Goodnotes 6 Mágica AI - styles.css
+   Estilo Oficial de Alta Gama - Réplica Literal de Goodnotes 6 en iPadOS
+   ========================================================================== */
+
+:root {
+  /* Colores oficiales de la interfaz Goodnotes 6 */
+  --bg-app: #eef1f5;             /* Escritorio gris de fondo de papel */
+  --bg-header-top: #e1e3e8;      /* Cabecera superior para pestañas */
+  --bg-tab-inactive: #cfd2d9;    /* Pestaña inactiva */
+  --bg-tab-active: #ffffff;      /* Pestaña activa (blanco puro) */
+  --bg-toolbar: #f6f8fa;         /* Barra de herramientas acoplada */
+  --bg-sidebar: #f8fafc;         /* Barra lateral de páginas */
+  --bg-card: #ffffff;            /* Paneles y tarjetas */
+  
+  --text-primary: #1e293b;       /* Letra principal */
+  --text-muted: #64748b;          /* Letra secundaria */
+  
+  /* Azul Goodnotes Oficial */
+  --primary: #0060df;
+  --primary-light: rgba(0, 96, 223, 0.08);
+  --primary-glow: rgba(0, 96, 223, 0.2);
+
+  --border-color: #cbd5e1;
+  --border-light: #e2e8f0;
+  
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 10px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+  --paper-shadow: 0 12px 36px rgba(15, 23, 42, 0.09), 0 3px 9px rgba(15, 23, 42, 0.04);
+
+  --font-ui: 'Outfit', sans-serif;
+  --font-math: 'Fira Code', monospace;
+  --font-handwrite: 'Caveat', cursive;
+  
+  --sidebar-width: 250px;
+  --sidebar-right-width: 380px;
+}
+
+/* Utilidades de color — generadas con Gemma 4 Local */
+.text-primary { color: var(--primary) !important; }
+.text-primary svg { color: var(--primary) !important; }
+
+
+/* RESET GENERAL */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-ui);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* LAYOUT ESTRUCTURAL DE DOCK GENERAL */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ==========================================================================
+   CABECERA DOCKED GENERAL (GOODNOTES 6 HEADER & TABS)
+   ========================================================================== */
+.goodnotes-header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  background-color: var(--bg-header-top);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  position: relative;
+}
+
+/* Fila 1: Pestañas horizontales de cuadernos */
+.header-top-row {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background-color: var(--bg-header-top);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
+.nav-group-left, .nav-group-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.nav-btn {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.nav-btn:hover {
+  background: rgba(0,0,0,0.04);
+}
+.nav-btn svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+}
+.nav-btn:hover svg {
+  color: var(--text-primary);
+}
+
+.icon-gear {
+  transition: transform 0.3s ease;
+}
+.nav-btn:hover .icon-gear {
+  transform: rotate(45deg);
+}
+
+.toolbar-divider-vertical {
+  width: 1px;
+  height: 20px;
+  background-color: rgba(0, 0, 0, 0.1);
+  margin: 0 6px;
+}
+.toolbar-divider-vertical-sub {
+  width: 1px;
+  height: 16px;
+  background-color: var(--border-color);
+  margin: 0 4px;
+}
+
+/* PESTAÑAS DE DOCUMENTOS (GOODNOTES REAL) */
+.nav-group-center {
+  flex-grow: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  padding-left: 20px;
+  overflow: hidden;
+}
+.notebook-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  list-style: none;
+  height: 100%;
+  overflow-x: auto;
+  padding: 0;
+  margin: 0;
+}
+
+/* El renderizado dinámico en app.js inyecta el `notebook-item` directamente aquí */
+.notebook-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px; /* Altura de la pestaña acoplada */
+  padding: 0 16px;
+  border-radius: 10px 10px 0 0;
+  background-color: var(--bg-tab-inactive);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-bottom: none;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  max-width: 180px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: all 0.15s ease;
+  position: relative;
+}
+.notebook-item:hover {
+  background-color: rgba(255,255,255,0.4);
+  color: var(--text-primary);
+}
+.notebook-item.active {
+  height: 38px; /* Ligeramente más alta */
+  background-color: var(--bg-tab-active);
+  color: var(--primary);
+  font-weight: 700;
+  border-color: var(--border-color);
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.02);
+  z-index: 10;
+}
+.notebook-name-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.notebook-name-group svg {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+}
+.notebook-item.active .notebook-name-group svg {
+  color: var(--primary);
+}
+
+/* Clic eliminar del cuaderno */
+.notebook-item .btn-delete {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.notebook-item .btn-delete:hover {
+  opacity: 1;
+  background: rgba(0,0,0,0.06);
+  color: var(--red);
+}
+.notebook-item .btn-delete svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* Fila 2: Barra de herramientas acoplada (Toolbar) */
+.goodnotes-toolbar {
+  height: 48px;
+  background-color: var(--bg-toolbar);
+  border-top: 1px solid rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+}
+
+.tools-section {
+  background: rgba(0, 0, 0, 0.02);
+  padding: 2px 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+/* Iconos de herramientas Goodnotes */
+.tool-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s;
+}
+.tool-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--text-primary);
+}
+.tool-icon-btn.active {
+  background: var(--primary-light);
+  border-color: rgba(0, 96, 223, 0.1);
+  color: var(--primary);
+}
+.tool-icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.lasso-badge {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  background: var(--primary);
+  color: white;
+  font-size: 7px;
+  font-weight: 800;
+  padding: 1px 3px;
+  border-radius: 4px;
+  border: 1px solid white;
+}
+
+/* Opciones Contextuales del pincel (Slots) */
+.options-section {
+  flex-grow: 1;
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 20px;
+}
+.options-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 3 Favoritos de Color slots reales de Goodnotes */
+.color-palette-slots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.color-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,0.15);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.color-btn:hover {
+  transform: scale(1.15);
+}
+.color-btn.active {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px var(--bg-toolbar), 0 0 0 3.5px var(--primary);
+}
+
+/* 3 Favoritos de Grosor slots reales de Goodnotes */
+.thickness-palette-slots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.thickness-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+.thickness-btn:hover {
+  background: rgba(0,0,0,0.03);
+}
+.thickness-btn.active {
+  background: rgba(0,0,0,0.06);
+  color: var(--text-primary);
+}
+.thickness-btn .dot {
+  background-color: currentColor;
+  border-radius: 50%;
+  display: block;
+}
+
+/* Opciones borrador */
+.eraser-mode-selector {
+  display: flex;
+  background: rgba(0,0,0,0.04);
+  border-radius: 8px;
+  padding: 2px;
+  border: 1px solid rgba(0,0,0,0.03);
+}
+.btn-toggle {
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-toggle.active {
+  background: white;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Botones de acción del lienzo */
+.nav-btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.nav-btn-icon:hover {
+  background: rgba(0,0,0,0.03);
+  color: var(--text-primary);
+}
+.nav-btn-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Zoom */
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.zoom-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-family: var(--font-math);
+}
+.nav-btn-icon-sm {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.nav-btn-icon-sm:hover {
+  background: rgba(0,0,0,0.03);
+  color: var(--text-primary);
+}
+.nav-btn-icon-sm svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Selector papel */
+.paper-selector {
+  position: relative;
+}
+.paper-dropdown {
+  position: absolute;
+  top: 38px;
+  right: -20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 220px;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  animation: slideInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.paper-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  width: 100%;
+  text-align: left;
+  transition: all 0.15s;
+}
+.paper-option:hover {
+  background: rgba(0,0,0,0.03);
+  color: var(--text-primary);
+}
+.paper-option.active {
+  background: var(--primary-light);
+  border-color: rgba(0, 96, 223, 0.1);
+  color: var(--primary);
+}
+
+/* MENÚ FLOTANTE SUPERIOR AJUSTES IA (DROPDOWN REAL DE GOODNOTES COG) */
+.api-key-panel-floater {
+  position: absolute;
+  top: 48px;
+  right: 16px;
+  width: 320px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 120;
+  animation: slideInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.api-key-panel-floater.hidden {
+  display: none !important;
+}
+
+.floater-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 8px;
+}
+.floater-title h3 {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.input-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.input-field-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.input-field-group select, .input-field-group input {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+  font-family: var(--font-ui);
+}
+.input-field-group input[type="text"] {
+  font-family: var(--font-math);
+}
+.input-field-group select:focus, .input-field-group input:focus {
+  border-color: var(--primary);
+}
+.api-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   CUERPO GENERAL ABAJO (SIDEBAR IZQUIERDO, VIEWPORT CENTRAL, IA DERECHO)
+   ========================================================================== */
+.app-body {
+  width: 100%;
+  height: calc(100vh - 92px); /* Descontar altura acoplada de cabecera */
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+/* SIDEBAR DE PÁGINAS IZQUIERDO (Estilo miniaturas de PDF) */
+.sidebar-left {
+  width: var(--sidebar-width);
+  height: 100%;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: 40;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sidebar-left.collapsed {
+  transform: translateX(calc(-1 * var(--sidebar-width)));
+  width: 0;
+  overflow: hidden;
+  border-right: none;
+}
+
+.sidebar-left-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.pages-list {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  align-content: start;
+}
+
+/* VIEWPORT CENTRAL DEL DIBUJO */
+.main-canvas-area {
+  flex-grow: 1;
+  height: 100%;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.canvas-viewport {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-app);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px;
+}
+
+.canvas-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  width: 2400px;
+  height: 3200px;
+  background-color: white;
+  box-shadow: var(--paper-shadow);
+  border-radius: 4px;
+}
+
+.paper-canvas, .paint-canvas, .overlay-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
+.paper-canvas {
+  z-index: 1;
+}
+.paint-canvas {
+  z-index: 2;
+  touch-action: none;
+}
+.overlay-canvas {
+  z-index: 3;
+  pointer-events: none;
+}
+.overlay-canvas.active {
+  pointer-events: auto;
+}
+
+/* Tip flotante inferior */
+.floating-tip {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+
+/* BARRA LATERAL DERECHA (RESOLVEDOR IA) */
+.sidebar-right {
+  width: var(--sidebar-right-width);
+  height: 100%;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: 40;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sidebar-right.collapsed {
+  transform: translateX(100%);
+  margin-right: calc(-1 * var(--sidebar-right-width));
+}
+
+.sidebar-right-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.right-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.right-title h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sidebar-right-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background-color: #f8fafc;
+}
+
+/* Bloques de IA en el Sidebar */
+.ai-state-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+}
+.ai-state-block h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.ai-state-block p {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 250px;
+}
+
+.empty-icon-wrap {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.empty-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--primary);
+}
+
+/* Spinner */
+.loader-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(0, 96, 223, 0.1);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Tarjeta resultado */
+.result-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+}
+.card-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.math-display {
+  font-family: var(--font-math);
+  font-size: 15px;
+  color: var(--primary);
+  padding: 8px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border-left: 3px solid var(--primary);
+  overflow-x: auto;
+}
+
+/* Timeline */
+.steps-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 2px;
+  position: relative;
+}
+.steps-timeline::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 11px;
+  width: 2px;
+  background-color: var(--border-light);
+}
+.step-item {
+  display: flex;
+  gap: 10px;
+  position: relative;
+}
+.step-number {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-size: 9px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.step-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.step-math {
+  font-family: var(--font-math);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  align-self: flex-start;
+}
+.step-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+#math-explanation {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.stamp-action-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stamp-instructions {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  text-align: center;
+}
+
+.btn-glowing-glow {
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  padding: 11px 16px;
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 3px 8px rgba(0, 96, 223, 0.2);
+  transition: all 0.2s;
+}
+.btn-glowing-glow:hover {
+  background: #0053c4;
+}
+.btn-glowing-glow.stamping-active {
+  background: #f8fafc;
+  border: 2px dashed var(--primary);
+  color: var(--primary);
+  box-shadow: none;
+  animation: pulse-border 1.5s infinite;
+}
+
+/* ==========================================================================
+   ESTILOS DE MODALES (IPADOS PREMIUM GRID)
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.hidden {
+  display: none !important;
+}
+
+.modal-card {
+  width: 85vw;
+  max-width: 920px;
+  height: 80vh;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalScaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title-group h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.modal-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.modal-body {
+  flex-grow: 1;
+  padding: 16px 24px;
+  overflow-y: auto;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.training-tabs {
+  display: flex;
+  background: #e2e8f0;
+  border-radius: 8px;
+  padding: 3px;
+}
+.tab-btn {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tab-btn.active {
+  background: white;
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-content {
+  display: none;
+  flex-grow: 1;
+}
+.tab-content.active {
+  display: block;
+}
+
+.training-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.training-box {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+}
+.training-box.trained {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+.box-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.training-box.trained .box-label {
+  color: var(--green);
+}
+.canvas-box-wrapper {
+  position: relative;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  width: 110px;
+  height: 110px;
+}
+.char-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  cursor: crosshair;
+}
+.guide-line {
+  position: absolute;
+  bottom: 18px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  border-bottom: 1px dashed rgba(0,0,0,0.06);
+  z-index: 1;
+  text-align: center;
+  font-size: 52px;
+  color: rgba(0,0,0,0.02);
+  line-height: 0;
+  pointer-events: none;
+}
+.btn-clear-char {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 600;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.btn-clear-char:hover {
+  background: rgba(239, 68, 68, 0.05);
+  color: var(--red);
+}
+
+/* Preview panel */
+.preview-panel-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 20px;
+}
+.preview-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+.preview-inputs h3 {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.preview-inputs p {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.form-group input {
+  width: 100%;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  outline: none;
+}
+.form-group input:focus {
+  border-color: var(--primary);
+}
+.form-group-row {
+  display: flex;
+  gap: 8px;
+}
+
+.preview-canvas-wrapper {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  aspect-ratio: 4/3;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+#preview-paint-canvas {
+  width: 100%;
+  flex-grow: 1;
+  background-color: #fafaf9;
+}
+.preview-canvas-title {
+  padding: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: #f8fafc;
+  width: 100%;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+}
+.footer-right-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* GENERAL BUTTONS */
+.btn-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.btn-icon:hover {
+  background: #e2e8f0;
+}
+.btn-primary-sm {
+  background: var(--primary-light);
+  border: 1px solid rgba(0, 96, 223, 0.15);
+  color: var(--primary);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.btn-primary-sm:hover {
+  background: var(--primary);
+  color: white;
+}
+.btn-gradient {
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-secondary {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background: #f1f5f9;
+}
+.btn-danger-sm {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: rgba(239, 68, 68, 0.8);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-danger-sm:hover {
+  background: rgba(239, 68, 68, 0.05);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.hidden { display: none !important; }
+.w-full { width: 100%; }
+
+/* SCROLLBARS */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   BIBLIOTECA DE DOCUMENTOS (DISEÑO IPADOS REALISTA)
+   ========================================================================== */
+#documents-library {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f1f3f7; /* Gris claro premium de iPadOS */
+  z-index: 150; /* Por encima de app-layout pero debajo de modal-overlay */
+  overflow: hidden;
+  animation: libraryFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  justify-content: center;
+}
+
+@keyframes libraryFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.library-container {
+  width: 100%;
+  max-width: 1200px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px;
+}
+
+/* Cabecera de la Biblioteca */
+.library-header {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+  padding-top: 10px;
+}
+
+.library-logo-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.library-logo-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--primary);
+}
+
+.library-logo-title h1 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.library-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.library-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Caja de búsqueda */
+.search-box-wrap {
+  position: relative;
+  width: 260px;
+}
+
+.search-box-wrap .search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: var(--text-muted);
+}
+
+#library-search-input {
+  width: 100%;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 8px 12px 8px 32px;
+  font-size: 12.5px;
+  outline: none;
+  font-family: var(--font-ui);
+  transition: border-color 0.15s;
+}
+
+#library-search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 96, 223, 0.08);
+}
+
+.btn-secondary-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: white;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-secondary-icon:hover {
+  background: #f1f5f9;
+  color: var(--text-primary);
+}
+
+.btn-secondary-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Contenido Principal de Biblioteca */
+.library-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 24px 0 60px 0;
+}
+
+.library-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.library-section-title::after {
+  content: '';
+  flex-grow: 1;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Grilla Responsiva de Cuadernos */
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 36px 28px;
+}
+
+/* ==========================================================================
+   PORTADAS 3D FÍSICAS PREMIUM DE LIBROS (IPADOS SKEUOMORPHIC SHADOWS)
+   ========================================================================== */
+.library-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  position: relative;
+}
+
+/* Contenedor del libro 3D */
+.notebook-3d-wrapper {
+  perspective: 800px;
+  width: 135px;
+  height: 185px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notebook-3d-card {
+  position: relative;
+  width: 130px;
+  height: 180px;
+  border-radius: 6px 14px 14px 6px;
+  background-color: var(--cover-color, #0060df);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.1), 0 3px 6px rgba(0,0,0,0.06);
+  transform-style: preserve-3d;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+/* Hover de levantamiento y rotación 3D realista */
+.library-card-wrapper:hover .notebook-3d-card {
+  transform: translateY(-8px) rotateY(-10deg);
+  box-shadow: 12px 18px 32px rgba(15, 23, 42, 0.16), 2px 6px 12px rgba(15, 23, 42, 0.08);
+}
+
+/* Lomo del Cuaderno (Spine) */
+.notebook-spine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 12px;
+  height: 100%;
+  background: linear-gradient(to right, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.06) 60%, rgba(255,255,255,0.08) 85%, rgba(0,0,0,0.1) 100%);
+  border-radius: 6px 0 0 6px;
+  border-right: 1px solid rgba(0,0,0,0.1);
+  z-index: 5;
+}
+
+/* Anillos Metálicos de Lomo (Estilo espiral real) */
+.notebook-rings-shadow {
+  position: absolute;
+  left: -2px;
+  top: 10%;
+  width: 4px;
+  height: 80%;
+  background: transparent;
+  z-index: 10;
+  pointer-events: none;
+  display: none; /* Se activa con clase */
+}
+
+.notebook-3d-card.cover-style-rings .notebook-rings-shadow {
+  display: block;
+  border-left: 2px dashed rgba(0, 0, 0, 0.2);
+}
+
+.notebook-rings-gold {
+  position: absolute;
+  left: -8px;
+  top: 8%;
+  width: 12px;
+  height: 84%;
+  z-index: 12;
+  pointer-events: none;
+  display: none;
+}
+
+.notebook-3d-card.cover-style-rings .notebook-rings-gold {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+/* Generador de anillos estéticos en espiral */
+.notebook-3d-card.cover-style-rings .notebook-rings-gold::after {
+  content: '';
+  display: block;
+  width: 10px;
+  height: 100%;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 16px,
+    #cfd2d9 16px,
+    #f8fafc 18px,
+    #94a3b8 19px,
+    transparent 19px
+  );
+  filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.15));
+}
+
+/* Estilo Lomo de Libro Clásico */
+.notebook-3d-card.cover-style-classic .notebook-spine {
+  width: 24px;
+  background: rgba(0, 0, 0, 0.25);
+  border-right: 2.5px double rgba(255, 255, 255, 0.15);
+}
+
+/* Hojas que asoman por el lado derecho (Page stack peek) */
+.notebook-page-peek {
+  position: absolute;
+  right: -3px;
+  top: 3px;
+  width: 5px;
+  height: calc(100% - 6px);
+  background-color: #fafaf9;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-left: none;
+  border-radius: 0 3px 3px 0;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.06);
+  z-index: 2;
+}
+
+/* Etiqueta Central Goodnotes */
+.notebook-cover-label {
+  position: absolute;
+  top: 32px;
+  left: 18px;
+  right: 18px;
+  background-color: white;
+  border: 1.5px dashed var(--border-color);
+  border-radius: 6px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
+  z-index: 8;
+  pointer-events: none;
+}
+
+.notebook-cover-label span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-ui);
+}
+
+/* Patrón de fondo opcional */
+.notebook-cover-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 6px 14px 14px 6px;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.notebook-3d-card[data-texture="leather"] {
+  background-image: radial-gradient(rgba(255,255,255,0.1) 15%, transparent 20%),
+                    radial-gradient(rgba(0,0,0,0.15) 15%, transparent 20%);
+  background-size: 4px 4px;
+}
+
+.notebook-3d-card[data-texture="marble"] {
+  background-image: linear-gradient(45deg, rgba(0,0,0,0.02) 25%, transparent 25%),
+                    linear-gradient(-45deg, rgba(0,0,0,0.02) 25%, transparent 25%);
+  background-size: 30px 30px;
+}
+
+/* Metadatos debajo del Cuaderno */
+.library-card-info {
+  width: 100%;
+  text-align: center;
+  padding: 0 4px;
+}
+
+.library-notebook-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
+}
+
+.library-notebook-meta {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+/* Menú Contextual (Tres puntos) */
+.notebook-menu-trigger {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.library-card-wrapper:hover .notebook-menu-trigger {
+  opacity: 1;
+}
+
+.notebook-menu-trigger:hover {
+  background: #f1f5f9;
+  color: var(--text-primary);
+}
+
+.notebook-options-dropdown {
+  position: absolute;
+  top: 34px;
+  right: 0;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  padding: 4px;
+  min-width: 140px;
+  z-index: 100;
+  display: none;
+  animation: slideInDown 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.notebook-options-dropdown.show {
+  display: block;
+}
+
+.option-dropdown-item {
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.option-dropdown-item:hover {
+  background: #f1f5f9;
+  color: var(--text-primary);
+}
+
+.option-dropdown-item.danger-option:hover {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+/* ==========================================================================
+   CREACIÓN VISUAL DE CUADERNOS (DOUBLE COLUMN SPLIT)
+   ========================================================================== */
+.creation-modal-card {
+  max-width: 780px;
+  height: 520px;
+}
+
+.creation-modal-body {
+  padding: 20px 24px;
+  overflow: hidden;
+}
+
+.creation-wizard-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 28px;
+  height: 100%;
+  align-items: center;
+}
+
+/* Lado Izquierdo Preview */
+.cover-preview-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #e2e8f0;
+  border-radius: 12px;
+  height: 100%;
+  padding: 16px;
+  border: 1px solid var(--border-light);
+}
+
+.preview-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+/* Lado Derecho de Ajustes */
+.cover-settings-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  height: 100%;
+  padding-right: 8px;
+}
+
+.form-group-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group-custom label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.form-group-custom input[type="text"] {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  outline: none;
+  font-family: var(--font-ui);
+  transition: all 0.15s;
+}
+
+.form-group-custom input[type="text"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 96, 223, 0.08);
+}
+
+.style-category-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin: 6px 0 4px 0;
+}
+
+/* Grilla de colores circulares */
+.color-options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.color-option-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid white;
+  outline: 1.5px solid var(--border-color);
+  cursor: pointer;
+  transition: transform 0.15s, outline-color 0.15s;
+}
+
+.color-option-dot:hover {
+  transform: scale(1.1);
+}
+
+.color-option-dot.active {
+  transform: scale(1.05);
+  outline: 2px solid var(--primary);
+}
+
+/* Selector de Lomo */
+.lomo-selector {
+  display: flex;
+  background: #cbd5e1;
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.lomo-btn {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.lomo-btn.active {
+  background: white;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Selector de papel elegante */
+.custom-select {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  outline: none;
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+
+.custom-select:focus {
+  border-color: var(--primary);
+}
+
+
+/* ==========================================================================
+   CORRECCIONES DE PORTADAS DEGRADADAS — Generado con Gemma 4 Local (Jarvis)
+   ========================================================================== */
+#documents-library.hidden { display: none !important; }
+
+.notebook-3d-card[data-grad="gradient-sunset"] { background: linear-gradient(135deg, #f43f5e, #f97316) !important; }
+.notebook-3d-card[data-grad="gradient-ocean"]  { background: linear-gradient(135deg, #06b6d4, #0060df) !important; }
+.notebook-3d-card[data-grad="gradient-purple"] { background: linear-gradient(135deg, #a855f7, #ec4899) !important; }
+.notebook-3d-card[data-grad="gradient-aurora"] { background: linear-gradient(135deg, #10b981, #06b6d4) !important; }
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes modalScaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}

@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Goodnotes 6 Mágica AI 🪄 - Tu cuaderno digital definitivo</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Goodnotes Mágica AI es un cuaderno inteligente compatible con Apple Pencil que aprende tu caligrafía vectorial y resuelve ecuaciones matemáticas paso a paso utilizando tus propios trazos escritos a mano.">
+  <meta name="author" content="Alejandro Basilio">
+  
+  <!-- Google Fonts & Lucide Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Caveat:wght@400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- CONTENEDOR PRINCIPAL DOCK GENERAL (ESTILO IPADOS) -->
+  <div class="app-layout">
+    
+    <!-- ==========================================================================
+         CABECERA SUPERIOR OFICIAL DE GOODNOTES 6 (DOCK DE PESTAÑAS Y HERRAMIENTAS)
+         ========================================================================== -->
+    <header class="goodnotes-header">
+      
+      <!-- Fila 1: Pestañas de Documentos (Cuadernos) y Controles del Sistema -->
+      <div class="header-top-row">
+        <!-- Controles Izquierdos -->
+        <div class="nav-group-left">
+          <button id="btn-back-docs" class="nav-btn text-primary" title="Ver Biblioteca de Documentos">
+            <i data-lucide="home"></i>
+          </button>
+          <button id="btn-toggle-sidebar" class="nav-btn" title="Ver páginas (Miniaturas)">
+            <i data-lucide="sidebar"></i>
+          </button>
+          <button id="btn-add-notebook" class="nav-btn" title="Nuevo Cuaderno">
+            <i data-lucide="folder-plus"></i>
+          </button>
+          <div class="toolbar-divider-vertical"></div>
+        </div>
+
+        <!-- Centro: Pestañas horizontales de cuadernos activos -->
+        <div class="nav-group-center">
+          <ul class="notebook-tabs" id="notebook-list">
+            <!-- Dinámico: Cálculo, Econometría, etc. Se renderizan como pestañas reales de iPad -->
+          </ul>
+        </div>
+
+        <!-- Controles Derechos -->
+        <div class="nav-group-right">
+          <div class="toolbar-divider-vertical"></div>
+          <div id="user-display" class="nav-user" style="margin-right:8px;color:var(--primary);"></div>
+          <button id="btn-signout" class="nav-btn" style="display:none;margin-right:8px;">Salir</button>
+          <button id="btn-login" class="nav-btn" title="Iniciar sesión">Iniciar sesión</button>
+          <button id="btn-add-page" class="nav-btn text-primary" title="Añadir Página al Cuaderno" onclick="(window.addPage||(()=>false))()">
+            <i data-lucide="file-plus-2"></i>
+          </button>
+          
+          <!-- Botón de ajustes de IA / Gemini / Ollama -->
+          <button id="api-panel-toggle" class="nav-btn" title="Ajustes de IA (Ollama / Gemini)">
+            <i data-lucide="cog" class="icon-gear toggle-icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Fila 2: Barra de Herramientas de Escritura (Toolbar acoplada) -->
+      <div class="goodnotes-toolbar">
+        
+        <!-- Grupo de Herramientas Primarias -->
+        <div class="toolbar-section tools-section" role="radiogroup" aria-label="Herramientas de dibujo">
+          <button id="tool-pen" class="tool-icon-btn active" data-tool="pen" title="Pluma" role="radio" aria-checked="true">
+            <i data-lucide="pen-tool"></i>
+          </button>
+          <button id="tool-highlighter" class="tool-icon-btn" data-tool="highlighter" title="Resaltador" role="radio" aria-checked="false">
+            <i data-lucide="highlighter"></i>
+          </button>
+          <button id="tool-eraser" class="tool-icon-btn" data-tool="eraser" title="Borrador" role="radio" aria-checked="false">
+            <i data-lucide="eraser"></i>
+          </button>
+          <button id="tool-lasso" class="tool-icon-btn" data-tool="lasso" title="Varita Mágica de IA" role="radio" aria-checked="false">
+            <i data-lucide="wand-2" class="text-purple animate-pulse-slow"></i>
+            <span class="lasso-badge">IA</span>
+          </button>
+        </div>
+
+        <div class="toolbar-divider-vertical"></div>
+
+        <!-- Grupo de Opciones Dinámicas según Herramienta Activa -->
+        <div class="toolbar-section options-section">
+          
+          <!-- Opciones de Pluma y Resaltador (Colores y Grosores) -->
+          <div class="options-group" id="pen-options">
+            <!-- 3 Slots de Colores favoritos (Goodnotes 6 real) -->
+            <div class="color-palette-slots">
+              <button class="color-btn active" data-color="#0f172a" style="background-color: #0f172a;" title="Negro Tinta"></button>
+              <button class="color-btn" data-color="#0060df" style="background-color: #0060df;" title="Azul Real"></button>
+              <button class="color-btn" data-color="#ef4444" style="background-color: #ef4444;" title="Rojo Corrección"></button>
+              <button class="color-btn" data-color="#10b981" style="background-color: #10b981;" title="Verde Apunte"></button>
+              <button class="color-btn" data-color="#7c3aed" style="background-color: #7c3aed;" title="Púrpura Elegante"></button>
+            </div>
+            
+            <div class="toolbar-divider-vertical-sub"></div>
+            
+            <!-- 3 Slots de Grosores favoritos (Goodnotes 6 real) -->
+            <div class="thickness-palette-slots">
+              <button class="thickness-btn" data-size="2.5" title="Fino (0.3mm)"><span class="dot" style="width: 4px; height: 4px;"></span></button>
+              <button class="thickness-btn active" data-size="4.5" title="Medio (0.5mm)"><span class="dot" style="width: 8px; height: 8px;"></span></button>
+              <button class="thickness-btn" data-size="8.5" title="Grueso (0.8mm)"><span class="dot" style="width: 14px; height: 14px;"></span></button>
+            </div>
+          </div>
+
+          <!-- Opciones de Borrador -->
+          <div class="options-group hidden" id="eraser-options">
+            <div class="eraser-mode-selector">
+              <button id="btn-eraser-stroke" class="btn-toggle active">Borrador de Trazos</button>
+              <button id="btn-eraser-pixel" class="btn-toggle">Borrador Píxel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grupo de Operaciones de Hoja y Zoom -->
+        <div class="toolbar-section actions-section">
+          <!-- Plantilla de Papel -->
+          <div class="paper-selector">
+            <button id="btn-paper-select" class="nav-btn-icon" title="Plantilla de Papel">
+              <i data-lucide="layout"></i>
+            </button>
+            <div class="paper-dropdown hidden" id="paper-dropdown">
+              <button class="paper-option active" data-paper="quad">
+                <i data-lucide="grid-3x3" class="text-cyan"></i> <span>Cuadrícula Gris</span>
+              </button>
+              <button class="paper-option" data-paper="lined">
+                <i data-lucide="align-justify"></i> <span>Rayas Clásico</span>
+              </button>
+              <button class="paper-option" data-paper="blank-light">
+                <i data-lucide="square" class="text-slate-200"></i> <span>Blanco Lienzo</span>
+              </button>
+              <button class="paper-option" data-paper="cybergrid">
+                <i data-lucide="grid" class="text-slate-800"></i> <span>Cuadrícula Cyber (Oscura)</span>
+              </button>
+              <button class="paper-option" data-paper="blank-dark">
+                <i data-lucide="square" class="text-slate-800"></i> <span>Negro Puro</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="toolbar-divider-vertical-sub"></div>
+
+          <!-- Acciones de lienzo -->
+          <button id="btn-undo" class="nav-btn-icon" title="Deshacer (Cmd+Z)">
+            <i data-lucide="undo-2"></i>
+          </button>
+          <button id="btn-redo" class="nav-btn-icon" title="Rehacer (Cmd+Shift+Z)">
+            <i data-lucide="redo-2"></i>
+          </button>
+          <button id="btn-clear" class="nav-btn-icon text-red-glow" title="Limpiar Hoja">
+            <i data-lucide="trash-2"></i>
+          </button>
+
+          <div class="toolbar-divider-vertical-sub"></div>
+
+          <!-- Zoom -->
+          <div class="zoom-controls">
+            <span id="zoom-indicator" class="zoom-label">100%</span>
+            <button id="btn-zoom-reset" class="nav-btn-icon-sm" title="Restablecer Vista">
+              <i data-lucide="maximize-2"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Menú de Ajustes de la IA (Desplegable superior acoplado) -->
+      <div class="api-key-panel-floater hidden" id="api-panel-content">
+        <div class="floater-title">
+          <i data-lucide="sparkles" class="text-purple"></i>
+          <h3>Ajustes del Asistente de IA</h3>
+        </div>
+        
+        <div class="input-field-group">
+          <label for="ai-engine-select">Motor de IA para Chapingo:</label>
+          <select id="ai-engine-select">
+            <option value="ollama" selected>Gemma 4 Local (Ollama - Recomendado)</option>
+            <option value="gemini">Gemini Cloud (Visión - Requiere Internet)</option>
+          </select>
+        </div>
+
+        <div id="gemini-settings-group" class="hidden input-field-group">
+          <label for="gemini-api-key">Gemini API Key:</label>
+          <div class="input-group">
+            <input type="password" id="gemini-api-key" placeholder="AIzaSy..." autocomplete="off">
+            <button id="btn-save-api-key" class="btn-primary-sm">Guardar</button>
+          </div>
+        </div>
+
+        <div id="ollama-settings-group" class="input-field-group">
+          <label for="ollama-model-input">Modelo Local en Ollama (Mac mini):</label>
+          <input type="text" id="ollama-model-input" value="jarvis">
+        </div>
+
+        <div class="api-status">
+          <span class="status-indicator online" id="api-status-dot"></span>
+          <span id="api-status-text">Gemma 4 Local Activo</span>
+        </div>
+      </div>
+
+    </header>
+
+    <!-- ==========================================================================
+         CUERPO INFERIOR (PANEL DE PÁGINAS IZQUIERDO, LIENZO CENTRAL, IA DERECHA)
+         ========================================================================== -->
+    <div class="app-body">
+      
+      <!-- BARRA LATERAL IZQUIERDA (MINIATURAS DE PÁGINAS) -->
+      <aside class="sidebar-left collapsed" id="sidebar-left">
+        <div class="sidebar-left-header">
+          <span>Páginas de este Cuaderno</span>
+        </div>
+        <div class="pages-list" id="pages-list">
+          <!-- Dinámico -->
+        </div>
+      </aside>
+
+      <!-- ÁREA CENTRAL DEL LIENZO DEL CUADERNO -->
+      <main class="main-canvas-area">
+        <div class="canvas-viewport" id="canvas-viewport">
+          <div class="canvas-wrapper" id="canvas-wrapper">
+            <!-- Capa de fondo para el papel virtual -->
+            <canvas id="paper-canvas" class="paper-canvas"></canvas>
+            <!-- Capa de dibujo principal -->
+            <canvas id="paint-canvas" class="paint-canvas"></canvas>
+            <!-- Capa de superposición para lazos y stamps -->
+            <canvas id="overlay-canvas" class="overlay-canvas"></canvas>
+          </div>
+        </div>
+        
+        <!-- Indicador flotante táctil -->
+        <div class="floating-tip">
+          <i data-lucide="mouse-pointer" class="text-cyan"></i>
+          <span>Usa dos dedos para moverte y hacer zoom. Con la Varita Mágica IA encierra tus ecuaciones.</span>
+        </div>
+      </main>
+
+      <!-- BARRA LATERAL DERECHA (ASISTENTE DE IA RESOLVEDOR) -->
+      <aside class="sidebar-right collapsed" id="sidebar-right">
+        <div class="sidebar-right-header">
+          <div class="right-title">
+            <i data-lucide="sparkles" class="text-primary animate-pulse"></i>
+            <h2>Asistente de IA</h2>
+          </div>
+          <button id="btn-close-right" class="btn-icon" title="Cerrar Panel">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <div class="sidebar-right-content">
+          <!-- Estado inicial vacío / resolvedor directo -->
+          <div id="ai-empty-state" class="ai-state-block">
+            <div class="empty-icon-wrap">
+              <i data-lucide="wand-2" class="empty-icon"></i>
+            </div>
+            <h3>Asistente de IA</h3>
+            <p>Usa la herramienta del **Lazo (IA)** en tu hoja para encerrar ecuaciones, o escribe una ecuación abajo para resolverla localmente con tu **Gemma 4** de inmediato:</p>
+            
+            <div class="result-card w-full" style="background: white; text-align: left; padding: 12px; margin-top: 6px;">
+              <span class="card-label">Resolver Ecuación con Gemma</span>
+              <div class="input-group" style="margin-top: 6px;">
+                <input type="text" id="direct-math-input" placeholder="Ej: 3x + 15 = 30" style="font-family: var(--font-math); font-size: 11px;">
+                <button id="btn-solve-direct" class="btn-primary-sm">Resolver</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estado de cargando / procesando -->
+          <div id="ai-loading-state" class="ai-state-block hidden">
+            <div class="loader-spinner"></div>
+            <h3>Pensando en la solución...</h3>
+            <p id="loading-subtext">Gemma 4 Local resolviendo paso a paso...</p>
+          </div>
+
+          <!-- Contenedor del resultado de resolución -->
+          <div id="ai-result-state" class="ai-state-block hidden">
+            <div class="success-header">
+              <i data-lucide="check-circle" class="text-green-500"></i>
+              <span>¡Resolución Lista!</span>
+            </div>
+
+            <div class="result-card equation-card">
+              <span class="card-label">Ecuación Detectada</span>
+              <div id="math-detected" class="math-display">3x + 9 = 18</div>
+            </div>
+
+            <div class="result-card steps-card">
+              <span class="card-label">Resolución Paso a Paso</span>
+              <div class="steps-timeline" id="math-steps-timeline">
+                <!-- Dinámico -->
+              </div>
+            </div>
+
+            <div class="result-card explanation-card">
+              <span class="card-label">Explicación</span>
+              <p id="math-explanation">Se restó 9 de ambos lados y luego se dividió el resultado entre 3 para despejar la incógnita.</p>
+            </div>
+
+            <!-- BOTÓN SÚPER GLOWING PARA ESTAMPAR EN EL LIENZO -->
+            <div class="stamp-action-wrap">
+              <button id="btn-activate-stamp" class="btn-glowing-glow w-full">
+                <i data-lucide="stamp" class="stamp-icon"></i>
+                <span>Estampar en el Lienzo</span>
+              </button>
+              <p class="stamp-instructions">Haz clic en el botón, luego haz un toque en cualquier parte de tu hoja. ¡La IA escribirá mágicamente la solución con letra fluida paso a paso!</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- MODAL: SALÓN DE ENTRENAMIENTO DE CALIGRAFÍA (IPADOS DESIGN) -->
+  <div class="modal-overlay hidden" id="training-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i data-lucide="pencil-line" class="text-cyan modal-header-icon"></i>
+          <div>
+            <h2>Salón de Entrenamiento de Caligrafía</h2>
+            <p class="modal-subtitle">Escribe cada uno de los símbolos para que la IA aprenda el vector de tu escritura.</p>
+          </div>
+        </div>
+        <button id="btn-close-training" class="btn-icon" title="Cerrar modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Pestañas del wizard de entrenamiento -->
+        <div class="training-tabs">
+          <button class="tab-btn active" data-tab="numbers">Números (0-9)</button>
+          <button class="tab-btn" data-tab="letters">Variables (x, y, z, a, b)</button>
+          <button class="tab-btn" data-tab="operators">Operadores (+, -, *, =, /)</button>
+          <button class="tab-btn" data-tab="advanced">Cálculo / Econometría (∫, ∑, β, ε)</button>
+          <button class="tab-btn" data-tab="preview">Probar Caligrafía</button>
+        </div>
+
+        <!-- PANEL DE NÚMEROS -->
+        <div class="tab-content active" id="tab-numbers">
+          <div class="training-grid">
+            <!-- Cajas de entrenamiento dinámicas de números -->
+            <div class="training-box" data-char="0"><div class="box-label">0</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">0</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="1"><div class="box-label">1</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">1</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="2"><div class="box-label">2</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">2</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="3"><div class="box-label">3</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">3</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="4"><div class="box-label">4</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">4</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="5"><div class="box-label">5</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">5</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="6"><div class="box-label">6</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">6</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="7"><div class="box-label">7</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">7</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="8"><div class="box-label">8</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">8</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="9"><div class="box-label">9</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">9</div></div><button class="btn-clear-char">Limpiar</button></div>
+          </div>
+        </div>
+
+        <!-- PANEL DE VARIABLES -->
+        <div class="tab-content" id="tab-letters">
+          <div class="training-grid">
+            <div class="training-box" data-char="x"><div class="box-label">x</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">x</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="y"><div class="box-label">y</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">y</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="z"><div class="box-label">z</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">z</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="a"><div class="box-label">a</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">a</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="b"><div class="box-label">b</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">b</div></div><button class="btn-clear-char">Limpiar</button></div>
+          </div>
+        </div>
+
+        <!-- PANEL DE OPERADORES -->
+        <div class="tab-content" id="tab-operators">
+          <div class="training-grid">
+            <div class="training-box" data-char="+"><div class="box-label">+</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">+</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="-"><div class="box-label">-</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">-</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="*"><div class="box-label">*</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">*</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="/"><div class="box-label">/</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">/</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="="><div class="box-label">=</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">=</div></div><button class="btn-clear-char">Limpiar</button></div>
+          </div>
+        </div>
+
+        <!-- PANEL AVANZADO / ECONOMETRÍA -->
+        <div class="tab-content" id="tab-advanced">
+          <div class="training-grid">
+            <div class="training-box" data-char="∫"><div class="box-label">Integral (∫)</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">∫</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="∑"><div class="box-label">Sumatoria (∑)</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">∑</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="β"><div class="box-label">Beta (β)</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">β</div></div><button class="btn-clear-char">Limpiar</button></div>
+            <div class="training-box" data-char="ε"><div class="box-label">Error / Epsilon (ε)</div><div class="canvas-box-wrapper"><canvas class="char-canvas" width="160" height="160"></canvas><div class="guide-line">ε</div></div><button class="btn-clear-char">Limpiar</button></div>
+          </div>
+        </div>
+
+        <!-- PANEL DE PREVISUALIZACIÓN Y PRUEBA -->
+        <div class="tab-content" id="tab-preview">
+          <div class="preview-panel-layout">
+            <div class="preview-inputs">
+              <h3>Prueba tu escritura aprendida</h3>
+              <p>Escribe cualquier expresión matemática abajo y presiona **"Escribir con mi letra"** para ver cómo la IA dibuja simulando tu pulso vectorial.</p>
+              
+              <div class="form-group">
+                <label for="preview-text-input">Expresión a escribir:</label>
+                <input type="text" id="preview-text-input" value="y_i = β_0 + β_1 * x_i + ε_i" placeholder="Escribe letras, números y símbolos">
+              </div>
+
+              <div class="form-group-row">
+                <button id="btn-draw-preview" class="btn-gradient">
+                  <i data-lucide="play"></i>
+                  <span>Escribir con mi letra</span>
+                </button>
+                <button id="btn-clear-preview" class="btn-secondary">
+                  <span>Limpiar</span>
+                </button>
+              </div>
+
+              <div class="training-stats">
+                <div class="stat-row">
+                  <span>Trazos guardados:</span>
+                  <strong id="stat-trained-count">0 / 24</strong>
+                </div>
+                <div class="stat-row">
+                  <span>Caligrafía en uso:</span>
+                  <strong id="stat-current-mode" class="text-cyan">Caligrafía por Defecto</strong>
+                </div>
+              </div>
+            </div>
+            
+            <div class="preview-canvas-wrapper">
+              <canvas id="preview-paint-canvas" width="400" height="280"></canvas>
+              <div class="preview-canvas-title">Lienzo de Prueba Caligráfica</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-clear-all-training" class="btn-danger-sm">Restablecer Todo</button>
+        <div class="footer-right-buttons">
+          <button id="btn-cancel-training" class="btn-secondary">Cancelar</button>
+          <button id="btn-save-training" class="btn-gradient">
+            <i data-lucide="check"></i>
+            <span>Guardar Caligrafía</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BIBLIOTECA DE DOCUMENTOS (PANTALLA DE INICIO IPADOS) -->
+  <div id="documents-library" class="hidden">
+    <div class="library-container">
+      
+      <!-- Barra Superior de la Biblioteca -->
+      <header class="library-header">
+        <div class="library-logo-title">
+          <i data-lucide="book-open" class="text-primary library-logo-icon"></i>
+          <div>
+            <h1>Mis Documentos</h1>
+            <p class="library-subtitle">Goodnotes Mágica AI 🪄 - Cuadernos Inteligentes</p>
+          </div>
+        </div>
+        
+        <!-- Controles de cabecera de Biblioteca -->
+        <div class="library-header-controls">
+          <!-- Campo de búsqueda -->
+          <div class="search-box-wrap">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="library-search-input" placeholder="Buscar cuadernos...">
+          </div>
+          
+          <button id="btn-library-add-notebook" class="btn-gradient">
+            <i data-lucide="folder-plus"></i>
+            <span>Nuevo Cuaderno</span>
+          </button>
+          
+          <button id="btn-close-library" class="btn-secondary-icon" title="Cerrar Biblioteca y ver lienzo">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Grid Principal de Cuadernos -->
+      <div class="library-content">
+        <div class="library-section-title">
+          <span>Todos los Cuadernos</span>
+        </div>
+        
+        <div class="library-grid" id="library-grid">
+          <!-- Se renderizan dinámicamente las tarjetas de libretas en 3D -->
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- MODAL: CREADOR VISUAL DE CUADERNOS (IPADOS PREMIUM STYLE) -->
+  <div class="modal-overlay hidden" id="create-notebook-modal">
+    <div class="modal-card creation-modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i data-lucide="book-open" class="text-primary modal-header-icon"></i>
+          <div>
+            <h2>Crear Nuevo Cuaderno</h2>
+            <p class="modal-subtitle">Personaliza tu portada, estilo de hoja y nombre de tu libreta.</p>
+          </div>
+        </div>
+        <button id="btn-close-create-modal" class="btn-icon" title="Cerrar modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body creation-modal-body">
+        <div class="creation-wizard-layout">
+          
+          <!-- LADO IZQUIERDO: RENDERIZACIÓN 3D DE PORTADA INTERACTIVA -->
+          <div class="cover-preview-column">
+            <div class="preview-title">Vista Previa de Portada</div>
+            
+            <div class="notebook-3d-wrapper">
+              <div class="notebook-3d-card" id="notebook-cover-3d" style="--cover-color: #0060df;">
+                <div class="notebook-spine"></div>
+                <div class="notebook-rings-shadow"></div>
+                <div class="notebook-rings-gold"></div>
+                
+                <!-- Etiqueta central Goodnotes real -->
+                <div class="notebook-cover-label">
+                  <span id="notebook-cover-title-preview">Mi Nuevo Cuaderno</span>
+                </div>
+                
+                <div class="notebook-cover-pattern" id="notebook-cover-pattern-preview"></div>
+                <div class="notebook-page-peek"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LADO DERECHO: DETALLES DE CONFIGURACIÓN -->
+          <div class="cover-settings-column">
+            
+            <!-- Campo de Texto para el Nombre -->
+            <div class="form-group-custom">
+              <label for="create-notebook-name">Nombre del Cuaderno:</label>
+              <input type="text" id="create-notebook-name" placeholder="Ej: Ecuaciones Integrales" value="Mi Nuevo Cuaderno" maxlength="40">
+            </div>
+
+            <!-- Selector de Color de Portada -->
+            <div class="form-group-custom">
+              <label>Color y Textura de la Portada:</label>
+              
+              <div class="style-category-title">Pasteles Oficiales</div>
+              <div class="color-options-grid">
+                <button class="color-option-dot active" data-color="#0060df" style="background: #0060df;" title="Azul Real"></button>
+                <button class="color-option-dot" data-color="#f43f5e" style="background: #f43f5e;" title="Rosa Flor"></button>
+                <button class="color-option-dot" data-color="#10b981" style="background: #10b981;" title="Verde Apunte"></button>
+                <button class="color-option-dot" data-color="#eab308" style="background: #eab308;" title="Amarillo Crema"></button>
+                <button class="color-option-dot" data-color="#a855f7" style="background: #a855f7;" title="Lila Aura"></button>
+                <button class="color-option-dot" data-color="#64748b" style="background: #64748b;" title="Gris Acero"></button>
+              </div>
+
+              <div class="style-category-title">Degradados Modernos</div>
+              <div class="color-options-grid">
+                <button class="color-option-dot" data-color="gradient-sunset" style="background: linear-gradient(135deg, #f43f5e, #f97316);" title="Sunset Glow" data-is-grad="true" data-grad-val="linear-gradient(135deg, #f43f5e, #f97316)"></button>
+                <button class="color-option-dot" data-color="gradient-ocean" style="background: linear-gradient(135deg, #06b6d4, #0060df);" title="Ocean Mist" data-is-grad="true" data-grad-val="linear-gradient(135deg, #06b6d4, #0060df)"></button>
+                <button class="color-option-dot" data-color="gradient-purple" style="background: linear-gradient(135deg, #a855f7, #ec4899);" title="Purple Magic" data-is-grad="true" data-grad-val="linear-gradient(135deg, #a855f7, #ec4899)"></button>
+                <button class="color-option-dot" data-color="gradient-aurora" style="background: linear-gradient(135deg, #10b981, #06b6d4);" title="Aurora Borealis" data-is-grad="true" data-grad-val="linear-gradient(135deg, #10b981, #06b6d4)"></button>
+              </div>
+
+              <div class="style-category-title">Texturas Especiales</div>
+              <div class="color-options-grid">
+                <button class="color-option-dot" data-color="#4a3728" data-texture="leather" style="background: #4a3728;" title="Cuero Clásico"></button>
+                <button class="color-option-dot" data-color="#e2e8f0" data-texture="marble" style="background: #e2e8f0;" title="Mármol Elegante"></button>
+              </div>
+            </div>
+
+            <!-- Estilo / Patrón de Portada -->
+            <div class="form-group-custom">
+              <label>Estilo de Lomo / Portada:</label>
+              <div class="lomo-selector">
+                <button class="lomo-btn active" data-cover-style="minimalist">Minimalista</button>
+                <button class="lomo-btn" data-cover-style="rings">Anillos Metálicos</button>
+                <button class="lomo-btn" data-cover-style="classic">Libro de Lomo</button>
+              </div>
+            </div>
+
+            <!-- Selector de Plantilla de Papel -->
+            <div class="form-group-custom">
+              <label for="create-notebook-paper">Estilo de Papel Inicial:</label>
+              <select id="create-notebook-paper" class="custom-select">
+                <option value="quad" selected>Cuadrícula Gris Clásica</option>
+                <option value="lined">Rayas Universitario</option>
+                <option value="blank-light">Blanco Lienzo Fino</option>
+                <option value="cybergrid">Cuadrícula Cyber (Oscura)</option>
+                <option value="blank-dark">Negro Puro</option>
+              </select>
+            </div>
+
+          </div>
+          
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-cancel-create" class="btn-secondary">Cancelar</button>
+        <button id="btn-confirm-create" class="btn-gradient">
+          <i data-lucide="check"></i>
+          <span>Crear Cuaderno</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Lucide icons renderizer -->
+  <script>
+    lucide.createIcons();
+  </script>
+  
+  <!-- Capturador global de errores JS — diagnóstico -->
+  <script>
+    window.addEventListener('error', function(e) {
+      console.error('🔴 ERROR GLOBAL:', e.message, 'en', e.filename, 'línea', e.lineno);
+      // Mostrar en pantalla solo si el modal no está disponible aún
+      const dbg = document.getElementById('debug-overlay');
+      if (dbg) dbg.textContent = '❌ Error JS: ' + e.message + ' [L' + e.lineno + ']';
+    });
+  </script>
+  <div id="debug-overlay" style="position:fixed;bottom:8px;left:8px;background:rgba(220,0,0,0.85);color:#fff;font-size:11px;padding:4px 8px;border-radius:4px;z-index:9999;display:none;font-family:monospace;max-width:90vw;word-break:break-all;"></div>
+  <script>
+    // Mostrar debug overlay si hay error
+    window.addEventListener('error', () => {
+      var dbgEl = document.getElementById('debug-overlay');
+      if (dbgEl) dbgEl.style.display = 'block';
+    });
+  </script>
+
+  <!-- Carga de módulos de la aplicación -->
+  <script src="handwriting.js"></script>
+  <script src="ai_solver.js"></script>
+  <script src="persistence.js"></script>
+  <!-- Firebase config (create from firebase-config.example.js) -->
+  <script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
+  <!-- FAILSAFE COMPLETO: manejo modal + creación independiente de initCreationWizard -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var modal = document.getElementById('create-notebook-modal');
+      var confirmBtn = document.getElementById('btn-confirm-create');
+      var cancelBtn  = document.getElementById('btn-cancel-create');
+      var closeBtn   = document.getElementById('btn-close-create-modal');
+
+      function mostrarModal() {
+        var nameInput = document.getElementById('create-notebook-name');
+        var preview   = document.getElementById('notebook-cover-3d');
+        var titlePrev = document.getElementById('notebook-cover-title-preview');
+      // Login modal markup insert
+      if (!document.getElementById('login-modal')) {
+        const div = document.createElement('div');
+        div.id = 'login-modal';
+        div.style.display = 'none';
+        div.innerHTML = `
+          <div class="modal-content" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;padding:16px;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.2);z-index:10001;">
+            <h3>Iniciar Sesión / Registro</h3>
+            <form id="login-form">
+              <div>
+                <label><input type="radio" name="login-mode" value="signin" checked> Iniciar sesión</label>
+                <label><input type="radio" name="login-mode" value="signup"> Registrarse</label>
+              </div>
+              <div><input id="login-email" type="email" placeholder="email" required></div>
+              <div><input id="login-pass" type="password" placeholder="contraseña" required></div>
+              <div style="margin-top:8px;"><button type="submit">Enviar</button> <button type="button" onclick="document.getElementById('login-modal').style.display='none'">Cancelar</button></div>
+            </form>
+          </div>
+        `;
+        document.body.appendChild(div);
+      }
+        
+        nameInput.value = 'Mi Nuevo Cuaderno';
+        if (titlePrev) titlePrev.innerText = 'Mi Nuevo Cuaderno';
+        if (preview) { 
+          preview.style.background = ''; 
+          preview.style.backgroundColor = '#0060df'; 
+          preview.dataset.grad = '';
+          preview.dataset.texture = '';
+          preview.classList.remove('cover-style-rings', 'cover-style-classic');
+        }
+        
+        // Resetear variables en window
+        if (typeof window.selectedCoverColor !== 'undefined') window.selectedCoverColor = '#0060df';
+        if (typeof window.selectedCoverStyle !== 'undefined') window.selectedCoverStyle = 'minimalist';
+        if (typeof window.selectedTexture    !== 'undefined') window.selectedTexture = '';
+        
+        // Resetear clases y estados de botones activos
+        document.querySelectorAll('.color-option-dot').forEach(b => b.classList.remove('active'));
+        var firstDot = document.querySelector('.color-option-dot[data-color="#0060df"]');
+        if (firstDot) firstDot.classList.add('active');
+
+        document.querySelectorAll('.lomo-btn').forEach(b => b.classList.remove('active'));
+        var firstLomo = document.querySelector('.lomo-btn[data-cover-style="minimalist"]');
+        if (firstLomo) firstLomo.classList.add('active');
+        
+        modal.classList.remove('hidden');
+      }
+
+      function cerrarModal() {
+        modal.classList.add('hidden');
+      }
+
+      // Botón header (folder-plus) y botón en biblioteca
+      var addHeaderBtn = document.getElementById('btn-add-notebook');
+      var addLibraryBtn = document.getElementById('btn-library-add-notebook');
+      if (addHeaderBtn) addHeaderBtn.onclick = mostrarModal;
+      if (addLibraryBtn) addLibraryBtn.onclick = mostrarModal;
+
+      // Cancelar / Cerrar
+      if (cancelBtn) cancelBtn.onclick = cerrarModal;
+      if (closeBtn)  closeBtn.onclick  = cerrarModal;
+
+      // ✅ CONFIRMAR CREACIÓN — independiente de app.js con soporte visual de portada completo
+      if (confirmBtn) {
+        confirmBtn.onclick = function() {
+          var name      = (document.getElementById('create-notebook-name').value || '').trim() || 'Sin Título';
+          var paperType = document.getElementById('create-notebook-paper').value || 'quad';
+
+          // Acceder al state global expuesto por app.js
+          if (typeof window.state === 'undefined' || !window.state) {
+            alert('La aplicación aún no está lista. Recarga la página.');
+            return;
+          }
+
+          var notebookId = 'notebook_' + Date.now();
+          var pageId     = 'page_'     + Date.now() + '_1';
+          
+          var coverCol = window.selectedCoverColor || '#0060df';
+          var coverSty = window.selectedCoverStyle || 'minimalist';
+          var tex      = window.selectedTexture    || '';
+
+          var newNb = {
+            id: notebookId,
+            name: name,
+            coverColor: coverCol,
+            coverStyle: coverSty,
+            texture: tex,
+            createdAt: Date.now(),
+            pages: [{ id: pageId, paperType: paperType, strokes: [] }]
+          };
+
+          window.state.notebooks.push(newNb);
+          window.state.activeNotebookId = newNb.id;
+          window.state.activePageId     = newNb.pages[0].id;
+
+          if (typeof window.saveStateToStorage === 'function') window.saveStateToStorage();
+          if (typeof window.renderNotebooks    === 'function') window.renderNotebooks();
+          if (typeof window.renderLibraryGrid  === 'function') window.renderLibraryGrid();
+          if (typeof window.renderPages        === 'function') window.renderPages();
+          if (typeof window.selectNotebook     === 'function') window.selectNotebook(newNb.id);
+          if (typeof window.hideLibrary        === 'function') window.hideLibrary();
+
+          cerrarModal();
+        };
+      }
+    });
+  </script>
+</body>
+</html>
