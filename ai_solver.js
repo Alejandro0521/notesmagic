@@ -4,42 +4,22 @@
    ========================================================================== */
 
 const AISolver = (() => {
-  let activeEngine = 'ollama'; // 'ollama' o 'gemini'
+  let activeEngine = 'demo'; // 'demo' mode (no local server required)
   let geminiApiKey = '';
-  let ollamaModel = 'jarvis'; // Modelo por defecto (Gemma 4 local)
   let lastSolvedData = null;
   let activeAnimation = null;
-  let lastCroppedImage = null; // Para visualizar el recorte de dibujo en modo Ollama
+  let lastCroppedImage = null;
 
   // Inicializar cargando ajustes del LocalStorage y enlazando eventos
   function init() {
-    activeEngine = localStorage.getItem('goodnotes_magica_engine') || 'ollama';
+    activeEngine = localStorage.getItem('goodnotes_magica_engine') || 'demo';
     geminiApiKey = localStorage.getItem('goodnotes_magica_gemini_key') || '';
-    ollamaModel = localStorage.getItem('goodnotes_magica_ollama_model') || 'jarvis';
 
     // Rellenar entradas de la interfaz
-    const engineSelect = document.getElementById('ai-engine-select');
     const keyInput = document.getElementById('gemini-api-key');
-    const modelInput = document.getElementById('ollama-model-input');
-
-    if (engineSelect) engineSelect.value = activeEngine;
     if (keyInput) keyInput.value = geminiApiKey;
-    if (modelInput) modelInput.value = ollamaModel;
 
-    // Enlazar los cambios de motor en la UI
-    if (engineSelect) {
-      engineSelect.addEventListener('change', (e) => {
-        setEngine(e.target.value);
-      });
-    }
 
-    // Guardar modelo de Ollama en vivo
-    if (modelInput) {
-      modelInput.addEventListener('input', (e) => {
-        ollamaModel = e.target.value.trim() || 'jarvis';
-        localStorage.setItem('goodnotes_magica_ollama_model', ollamaModel);
-      });
-    }
 
     // Sincronizar UI de configuración
     syncSettingsUI();
@@ -187,41 +167,21 @@ const AISolver = (() => {
   // ==========================================================================
   
   // Enviar una selección de trazos a resolver
-  // En Gemini: directamente cropeamos y enviamos la imagen.
-  // En Ollama: dado que Gemma es de texto, le pedimos al usuario que escriba/confirme 
-  // la ecuación en la barra derecha, mostrando su recorte como referencia visual premium.
+  // Usa demostración local sin conexiones externas
   async function solveEquation(imageBase64) {
     lastCroppedImage = imageBase64;
     showLoading();
-
-    if (activeEngine === 'gemini') {
-      if (!geminiApiKey) {
-        alertFloatingTip("Por favor ingresa tu API Key de Gemini en la barra lateral.");
-        showEmptyState();
-        return;
-      }
-      try {
-        const response = await fetchGeminiAPI(imageBase64);
-        if (response && response.solution_steps) {
-          renderSolution(response);
-        } else {
-          throw new Error("Respuesta inválida de Gemini");
-        }
-      } catch (error) {
-        console.error("Error en Gemini AI:", error);
-        alertFloatingTip("Error al conectar con Gemini. ¿Clave correcta?");
-        showEmptyState();
-      }
-    } else {
-      // Modo Ollama Gemma 4 (Local)
-      // Mostramos la interfaz de confirmación de texto en el sidebar
-      // Así el usuario puede ver su dibujo recortado y escribir el texto para Gemma
-      showOllamaConfirmationUI(imageBase64);
-    }
+    document.getElementById('loading-subtext').innerText = 'Analizando tu dibujo...';
+    
+    // Simular análisis
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    // Mostrar panel de input para que usuario escriba la ecuación
+    showDemoConfirmationUI(imageBase64);
   }
 
-  // Mostrar panel para digitar la ecuación dibujada (Lazo -> Confirmación -> Gemma 4)
-  function showOllamaConfirmationUI(imageBase64) {
+  // Mostrar panel para digitar la ecuación dibujada (sin conexión a Ollama)
+  function showDemoConfirmationUI(imageBase64) {
     const sidebar = document.getElementById('sidebar-right');
     const empty = document.getElementById('ai-empty-state');
     const loading = document.getElementById('ai-loading-state');
@@ -241,7 +201,7 @@ const AISolver = (() => {
           <button id="ai-solve-btn" style="padding:10px 16px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:14px; transition: opacity 0.2s;">
             Resolver
           </button>
-          <p style="font-size:12px; color:#666; text-align:center; margin:0;">💡 Sin Ollama? Muestra demos de ecuaciones automáticas</p>
+          <p style="font-size:12px; color:#666; text-align:center; margin:0;">📝 Escribe la ecuación que viste en tu dibujo</p>
         </div>
       `;
       
@@ -262,11 +222,10 @@ const AISolver = (() => {
             await solveLocalEquationText(equation);
           } catch (error) {
             console.error("Error al resolver:", error);
-            // Re-enable button on error
             solveBtn.disabled = false;
             solveBtn.style.opacity = '1';
             solveBtn.innerText = 'Resolver';
-            alertFloatingTip("Hubo un error. Intenta de nuevo.");
+            alertFloatingTip("Error. Intenta de nuevo.");
           }
         };
         
@@ -278,7 +237,6 @@ const AISolver = (() => {
           }
         });
         
-        // Auto-focus
         inputField.focus();
       }
     }
@@ -288,107 +246,33 @@ const AISolver = (() => {
     if (result) result.classList.add('hidden');
   }
 
-  // Resolver ecuación puramente en texto llamando al Ollama local con Gemma 4
+  // Resolver ecuación usando demostración local (sin Ollama)
   async function solveLocalEquationText(equationText) {
     if (!equationText || equationText.trim().length === 0) {
       showEmptyState();
       return;
     }
 
-    console.log('[AI Solver] Starting resolution for:', equationText);
+    console.log('[AI Solver] Resolving:', equationText);
     showLoading();
     document.getElementById('loading-subtext').innerText = `Analizando: ${equationText}...`;
 
     try {
-      const response = await fetchOllamaAPI(equationText);
-      console.log('[AI Solver] Got response:', response);
-      
-      if (response && response.solution_steps && response.solution_steps.length > 0) {
-        console.log('[AI Solver] Rendering solution');
-        renderSolution(response);
-      } else {
-        throw new Error("Formato de respuesta inválido");
-      }
-    } catch (error) {
-      console.warn('[AI Solver] Ollama failed, using local mock:', error.message);
-      document.getElementById('loading-subtext').innerText = 'Usando demostración local (sin Ollama)...';
-      
-      // Fallback: usar mock inteligente
+      // Simular tiempo de análisis
       await new Promise(resolve => setTimeout(resolve, 400));
+      
       const localMock = getMockResolution(equationText);
-      console.log('[AI Solver] Rendering mock solution:', localMock);
+      console.log('[AI Solver] Rendering solution:', localMock);
       renderSolution(localMock);
-    }
-  }
-
-  // Consulta directa al endpoint de Ollama local (/api/generate) con timeout
-  async function fetchOllamaAPI(equationText) {
-    const url = 'http://localhost:11434/api/generate';
-    
-    const promptText = `Resuelve esta ecuación matemática en español paso a paso: ${equationText}
-
-Responde SOLO con JSON (sin markdown, sin explicaciones extras):
-{
-  "equation": "${equationText}",
-  "solution_steps": [
-    "paso 1",
-    "paso 2",
-    "..."
-  ],
-  "explanation": "breve explicación"
-}`;
-
-    const requestBody = {
-      model: ollamaModel,
-      prompt: promptText,
-      stream: false,
-      options: {
-        temperature: 0.2,
-        num_predict: 500
-      }
-    };
-
-    // Timeout agresivo de 5 segundos
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      console.warn("Ollama timeout - aborting request");
-      controller.abort();
-    }, 5000);
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      const textResult = data.response || data.answer || '';
-      
-      // Intenta parsear JSON
-      try {
-        const jsonMatch = textResult.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
-        }
-      } catch (parseError) {
-        console.warn("JSON parse failed:", parseError.message);
-      }
-      
-      throw new Error("Invalid response format from Ollama");
     } catch (error) {
-      clearTimeout(timeoutId);
-      console.error("fetchOllamaAPI error:", error.message);
-      throw error;
+      console.error('[AI Solver] Error:', error.message);
+      showEmptyState();
+      alertFloatingTip("Error al analizar la ecuación. Intenta de nuevo.");
     }
   }
+
+  // DEPRECATED: fetchOllamaAPI - no longer used (Ollama removed from app)
+  // async function fetchOllamaAPI(equationText) { ... }
 
   // Consulta real a la API de Gemini 1.5 Flash
   async function fetchGeminiAPI(imageBase64) {
