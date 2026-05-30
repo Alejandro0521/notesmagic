@@ -207,6 +207,7 @@ const AISolver = (() => {
           <button id="ai-solve-btn" style="padding:10px 16px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:14px; transition: opacity 0.2s;">
             Resolver
           </button>
+          <p style="font-size:12px; color:#666; text-align:center; margin:0;">💡 Sin Ollama? Muestra demos de ecuaciones automáticas</p>
         </div>
       `;
       
@@ -215,18 +216,31 @@ const AISolver = (() => {
       const inputField = document.getElementById('ai-equation-input');
       
       if (solveBtn && inputField) {
-        solveBtn.addEventListener('click', () => {
+        const handleSolve = async () => {
           const equation = inputField.value.trim();
-          if (equation) {
-            solveBtn.disabled = true;
-            solveBtn.style.opacity = '0.6';
-            solveLocalEquationText(equation);
+          if (!equation) return;
+          
+          solveBtn.disabled = true;
+          solveBtn.style.opacity = '0.5';
+          solveBtn.innerText = 'Resolviendo...';
+          
+          try {
+            await solveLocalEquationText(equation);
+          } catch (error) {
+            console.error("Error al resolver:", error);
+            // Re-enable button on error
+            solveBtn.disabled = false;
+            solveBtn.style.opacity = '1';
+            solveBtn.innerText = 'Resolver';
+            alertFloatingTip("Hubo un error. Intenta de nuevo.");
           }
-        });
+        };
+        
+        solveBtn.addEventListener('click', handleSolve);
         
         inputField.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            solveBtn.click();
+          if (e.key === 'Enter' && !solveBtn.disabled) {
+            handleSolve();
           }
         });
         
@@ -258,10 +272,9 @@ const AISolver = (() => {
         throw new Error("Formato de respuesta inválido");
       }
     } catch (error) {
-      console.warn("Ollama no disponible, usando demo local:", error.message);
+      console.warn("Ollama falló, usando demo local:", error.message);
       
-      // Fallback: usar mock inteligente
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Fallback: usar mock inteligente inmediatamente (sin espera)
       const localMock = getMockResolution(equationText);
       renderSolution(localMock);
     }
@@ -294,9 +307,12 @@ Responde SOLO con JSON (sin markdown, sin explicaciones extras):
       }
     };
 
-    // Timeout de 10 segundos
+    // Timeout agresivo de 5 segundos
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => {
+      console.warn("Ollama timeout - aborting request");
+      controller.abort();
+    }, 5000);
 
     try {
       const response = await fetch(url, {
@@ -321,13 +337,14 @@ Responde SOLO con JSON (sin markdown, sin explicaciones extras):
         if (jsonMatch) {
           return JSON.parse(jsonMatch[0]);
         }
-      } catch (e) {
-        console.warn("No valid JSON in response, using mock");
+      } catch (parseError) {
+        console.warn("JSON parse failed:", parseError.message);
       }
       
-      throw new Error("Invalid response format");
+      throw new Error("Invalid response format from Ollama");
     } catch (error) {
       clearTimeout(timeoutId);
+      console.error("fetchOllamaAPI error:", error.message);
       throw error;
     }
   }
