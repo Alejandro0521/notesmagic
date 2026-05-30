@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer');
+// Puppeteer is published as an ES module in recent versions; use dynamic import below.
 const http = require('http');
 const net = require('net');
 const { spawn } = require('child_process');
@@ -35,6 +35,15 @@ function waitForServer(url, timeout = 10000) {
 }
 
 (async () => {
+  // dynamic import for ESM-compatible Puppeteer
+  let puppeteer;
+  try {
+    const mod = await import('puppeteer');
+    puppeteer = mod.default || mod;
+  } catch (err) {
+    console.error('Failed to import puppeteer as ESM module:', err);
+    process.exit(1);
+  }
   // Determine port and start static server
   if (!process.env.PORT) {
     try {
