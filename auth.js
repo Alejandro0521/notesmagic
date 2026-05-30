@@ -16,8 +16,46 @@
     script2.onload = () => { callback(); };
   }
 
+  function ensureLoginModal() {
+    if (document.getElementById(loginModalId)) return;
+    const div = document.createElement('div');
+    div.id = loginModalId;
+    div.style.display = 'none';
+    div.style.position = 'fixed';
+    div.style.top = '0';
+    div.style.left = '0';
+    div.style.width = '100%';
+    div.style.height = '100%';
+    div.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    div.style.zIndex = '9999';
+    div.innerHTML = `
+      <div style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;padding:20px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:10000;min-width:300px;">
+        <h3 style="margin-top:0;">Iniciar Sesión</h3>
+        <form id="login-form">
+          <div style="margin-bottom:12px;">
+            <label style="display:block;margin-bottom:6px;">
+              <input type="radio" name="login-mode" value="signin" checked> Iniciar sesión
+            </label>
+            <label style="display:block;">
+              <input type="radio" name="login-mode" value="signup"> Registrarse
+            </label>
+          </div>
+          <div style="margin-bottom:10px;"><input id="login-email" type="email" placeholder="Correo" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;"></div>
+          <div style="margin-bottom:12px;"><input id="login-pass" type="password" placeholder="Contraseña" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;"></div>
+          <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;">
+            <button type="submit" style="padding:8px 16px;background:#0060df;color:#fff;border:none;border-radius:4px;cursor:pointer;">Enviar</button>
+            <button type="button" onclick="document.getElementById('${loginModalId}').style.display='none'" style="padding:8px 16px;background:#f0f0f0;border:1px solid #ccc;border-radius:4px;cursor:pointer;">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    `;
+    document.body.appendChild(div);
+  }
+
   function initAuth() {
     // If FIREBASE_CONFIG is available, use Firebase auth, otherwise fall back to local IndexedDB Persist
+    ensureLoginModal();
+    
     const btnLogin = document.getElementById(loginBtnId);
     const userDisplay = document.getElementById(userDisplayId);
     const modal = document.getElementById(loginModalId);
