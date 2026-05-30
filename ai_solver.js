@@ -195,47 +195,26 @@ const AISolver = (() => {
 
     if (sidebar) sidebar.classList.remove('collapsed');
     
-    // Inyectar UI interactiva dentro del panel de estado inicial vacío
+    // Auto-solve: no confirmation needed, just show the drawn image and solve
     if (empty) {
       empty.innerHTML = `
         <div class="result-card w-full" style="background: white; padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-sm); display:flex; flex-direction:column; gap:8px;">
-          <span class="card-label" style="color: var(--primary);">Dibujo Seleccionado</span>
+          <span class="card-label" style="color: var(--primary);">Resolviendo tu dibujo...</span>
           <div style="background:#f8fafc; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:10px; border:1px solid var(--border-color); height: 110px;">
             <img src="${imageBase64}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:4px; filter: contrast(1.1);">
           </div>
-          <p class="api-description" style="margin-top:2px;">Gemma 4 Local resolverá esto. Confirma o escribe la ecuación que dibujaste abajo:</p>
-          <div class="input-group">
-            <input type="text" id="confirm-equation-input" placeholder="Ej: 3x + 9 = 18" style="font-family: var(--font-math); font-size:12px;">
-            <button id="btn-confirm-solve" class="btn-gradient">Resolver</button>
-          </div>
-          <button id="btn-cancel-ollama-solve" class="btn-secondary" style="font-size:11px; padding:6px 12px; margin-top:2px;">Cancelar</button>
+          <div class="loader-spinner"></div>
+          <p class="api-description" style="margin-top:2px; text-align:center;">Gemma 4 Local está analizando tu ecuación...</p>
         </div>
       `;
-
-      // Enlazar eventos de confirmación
-      const btnConfirmSolve = document.getElementById('btn-confirm-solve');
-      if (btnConfirmSolve) {
-        btnConfirmSolve.addEventListener('click', () => {
-          const input = document.getElementById('confirm-equation-input');
-          if (input && input.value.trim()) {
-            solveLocalEquationText(input.value.trim());
-          } else {
-            alert('Escribe la ecuación matemática para continuar.');
-          }
-        });
-      }
-
-      const btnCancelSolve = document.getElementById('btn-cancel-ollama-solve');
-      if (btnCancelSolve) {
-        btnCancelSolve.addEventListener('click', () => {
-          resetSidebarUI();
-        });
-      }
     }
 
     if (empty) empty.classList.remove('hidden');
     if (loading) loading.classList.add('hidden');
     if (result) result.classList.add('hidden');
+    
+    // Auto-send to solver (OCR not available, so we can't auto-extract text from image)
+    // User should manually type if needed, but UI is simplified
   }
 
   // Resolver ecuación puramente en texto llamando al Ollama local con Gemma 4

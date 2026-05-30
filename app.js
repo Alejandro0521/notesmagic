@@ -519,8 +519,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function getCanvasCoords(event) {
     const rect = paintCanvas.getBoundingClientRect();
     return {
-      x: (event.clientX - rect.left) / zoom,
-      y: (event.clientY - rect.top) / zoom
+      x: (event.clientX - rect.left - panX) / zoom,
+      y: (event.clientY - rect.top - panY) / zoom
     };
   }
 
