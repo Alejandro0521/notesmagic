@@ -109,11 +109,12 @@
 
     } else {
       // Local fallback using Persist (IndexedDB)
-      if (typeof Persist === 'undefined') {
-        console.warn('Persist not available yet. Local auth disabled.');
-        return;
-      }
-      Persist.init().then(() => {
+      function setupLocalAuth() {
+        if (typeof Persist === 'undefined') {
+          setTimeout(setupLocalAuth, 100);
+          return;
+        }
+        Persist.init().then(() => {
         if (form) {
           form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -148,6 +149,8 @@
           if (typeof window.loadState === 'function') window.loadState();
         });
       }).catch(e => console.warn('Persist init failed', e));
+      }
+      setupLocalAuth();
     }
   }
 
