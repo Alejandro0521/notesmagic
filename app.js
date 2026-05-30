@@ -526,12 +526,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (paintCanvas) {
     paintCanvas.addEventListener('pointerdown', (e) => {
-    // SOPORTE EXCLUSIVO PARA IPAD:
-    // Si apoyamos los dedos (touch) y estamos con una herramienta de dibujo,
-    // NO dibujamos, sino que iniciamos el PAN/ZOOM con toques!
-    // Solo dibujamos si es con el LÁPIZ (Apple Pencil - pen) o si es ratón (mouse).
-    if (e.pointerType === 'touch' && (activeTool === 'pen' || activeTool === 'highlighter' || activeTool === 'eraser')) {
-      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    // APPLE PENCIL & PALM REJECTION (iPad Optimized)
+    // Only allow drawing with:
+    // 1. Apple Pencil (pointerType === 'pen')
+    // 2. Mouse (pointerType === 'mouse')
+    // 3. Touch should ONLY be used for pan/zoom, never for drawing
+    
+    // Reject palm/hand touches when using drawing tools
+    const isStylus = e.pointerType === 'pen';
+    const isMouse = e.pointerType === 'mouse';
+    const isTouch = e.pointerType === 'touch';
+    
+    // PALM REJECTION: If it's a touch and we're in a drawing tool, treat as pan/zoom
+    if (isTouch && (activeTool === 'pen' || activeTool === 'highlighter' || activeTool === 'eraser')) {
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY, isPalm: false });
       
       if (activePointers.size === 1) {
         isPanning = true;
@@ -540,12 +548,11 @@ document.addEventListener('DOMContentLoaded', () => {
         touchStartCenter.x = e.clientX;
         touchStartCenter.y = e.clientY;
       } else if (activePointers.size === 2) {
-        // Iniciar zoom de dos dedos
+        // Two-finger zoom
         const pts = Array.from(activePointers.values());
         touchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
         touchStartScale = zoom;
         
-        // Centro del zoom
         touchStartCenter.x = (pts[0].x + pts[1].x) / 2;
         touchStartCenter.y = (pts[0].y + pts[1].y) / 2;
         touchStartPan.x = panX;
@@ -554,20 +561,20 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Registrar puntero de dibujo
+    // Only allow drawing with stylus or mouse (no touch drawing)
+    if (isTouch && activeTool === 'lasso') {
+      return; // Lasso also should use stylus only on iPad
+    }
+
+    // Register pointer for drawing
     paintCanvas.setPointerCapture(e.pointerId);
 
-    // MODO ESTAMPA ACTIVO:
-    // Si el asistente de IA tiene una ecuación resuelta y está en modo estampa,
-    // colocamos la ecuación con caligrafía allí en lugar de dibujar!
+    // STAMP MODE: Place resolved equation from AI
     if (window.isStampModeActive) {
       const coords = getCanvasCoords(e);
-      // Desactivamos modo para evitar doble click
       window.isStampModeActive = false;
       
       AISolver.stampSolutionOnCanvas(paintCtx, coords.x, coords.y, () => {
-        // Al terminar de escribir, añadimos el dibujo resultante a los trazos de la página
-        // Para simplificar, capturamos lo dibujado como un trazo vectorial simulado o redibujamos
         saveCanvasStrokesFromAI();
       });
       return;
@@ -576,11 +583,21 @@ document.addEventListener('DOMContentLoaded', () => {
     isDrawing = true;
     const coords = getCanvasCoords(e);
 
-    // Modulación dinámica de presión (Apple Pencil responde nativamente a e.pressure)
-    // El ratón da 0.5 por defecto
-    let pressure = e.pressure !== undefined && e.pressure > 0 ? e.pressure : 0.6;
+    // APPLE PENCIL PRESSURE & TILT SUPPORT
+    // pressure: 0-1 (Apple Pencil gives detailed pressure info)
+    // tiltX, tiltY: angle of stylus in degrees (-90 to 90)
+    // twist: rotation angle of stylus (Apple Pencil 2nd gen)
+    let pressure = (e.pressure !== undefined && e.pressure > 0) ? e.pressure : 0.6;
+    let tiltX = e.tiltX || 0;
+    let tiltY = e.tiltY || 0;
     
-    // Si usamos borrador de trazos completo
+    // Apply tilt to pressure for more natural strokes
+    if (isStylus && (tiltX !== 0 || tiltY !== 0)) {
+      const tiltFactor = Math.cos(((Math.abs(tiltX) + Math.abs(tiltY)) / 180) * Math.PI / 2);
+      pressure = Math.max(pressure * 0.7, pressure * tiltFactor);
+    }
+    
+    // Eraser tool
     if (activeTool === 'eraser' && eraserMode === 'stroke') {
       eraseStrokeAt(coords.x, coords.y);
       return;
@@ -592,31 +609,36 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Iniciar trazo
-    currentStrokePoints = [{ x: coords.x, y: coords.y, p: pressure }];
+    // Start stroke with pressure info
+    currentStrokePoints = [{ x: coords.x, y: coords.y, p: pressure, tx: tiltX, ty: tiltY }];
 
-    // Dibujar punto inicial
+    // Draw initial point
     paintCtx.fillStyle = strokeColor;
     paintCtx.beginPath();
     paintCtx.arc(coords.x, coords.y, (strokeSize * pressure) / 2, 0, Math.PI * 2);
     paintCtx.fill();
+    
+    // Haptic feedback if available (iOS 13+)
+    if (window.navigator && window.navigator.vibrate && isStylus) {
+      window.navigator.vibrate(5); // Short 5ms vibration on pencil down
+    }
     });
   }
 
   if (paintCanvas) {
     paintCanvas.addEventListener('pointermove', (e) => {
-    // Si es un toque de panning con los dedos en iPad
+    // Pan/Zoom with touch on iPad (finger gestures)
     if (activePointers.has(e.pointerId) && isPanning) {
       activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       
       if (activePointers.size === 1) {
-        // Desplazamiento simple
+        // Single finger pan
         const dx = e.clientX - touchStartCenter.x;
         const dy = e.clientY - touchStartCenter.y;
         panX = touchStartPan.x + dx;
         panY = touchStartPan.y + dy;
       } else if (activePointers.size === 2) {
-        // Zoom + Desplazamiento
+        // Two-finger zoom + pan
         const pts = Array.from(activePointers.values());
         const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
         const center = {
@@ -629,7 +651,6 @@ document.addEventListener('DOMContentLoaded', () => {
         zoom = touchStartScale * zoomFactor;
         zoom = Math.max(0.15, Math.min(3.0, zoom));
         
-        // Ajustar pan para zoom centrado en el punto medio de los dedos
         const canvasCenterX = (center.x - touchStartPan.x) / prevZoom;
         const canvasCenterY = (center.y - touchStartPan.y) / prevZoom;
         
@@ -644,37 +665,44 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isDrawing) return;
     const coords = getCanvasCoords(e);
     
-    // Presión
-    let pressure = e.pressure !== undefined && e.pressure > 0 ? e.pressure : 0.65;
+    // APPLE PENCIL PRESSURE & TILT
+    let pressure = (e.pressure !== undefined && e.pressure > 0) ? e.pressure : 0.65;
+    let tiltX = e.tiltX || 0;
+    let tiltY = e.tiltY || 0;
+    
+    // Apply tilt to pressure for more natural width variation
+    if (e.pointerType === 'pen' && (tiltX !== 0 || tiltY !== 0)) {
+      const tiltFactor = Math.cos(((Math.abs(tiltX) + Math.abs(tiltY)) / 180) * Math.PI / 2);
+      pressure = Math.max(pressure * 0.7, pressure * tiltFactor);
+    }
 
-    // Herramienta Borrador
+    // Eraser tool
     if (activeTool === 'eraser') {
       if (eraserMode === 'stroke') {
         eraseStrokeAt(coords.x, coords.y);
       } else {
-        // Borrador píxel: Limpia en un radio circular local
         erasePixelsAt(coords.x, coords.y, strokeSize * 6);
       }
       return;
     }
 
-    // Herramienta Lazo
+    // Lasso tool
     if (activeTool === 'lasso') {
       lassoPoints.push(coords);
       drawLassoOverlay();
       return;
     }
 
-    // Dibujo regular: agregar punto
+    // Regular drawing: add point with pressure info
     const prevPt = currentStrokePoints[currentStrokePoints.length - 1];
     
-    // Suavizado dinámico: evitar capturar puntos idénticos muy cercanos
+    // Smooth: avoid duplicate points too close together
     const dist = Math.hypot(coords.x - prevPt.x, coords.y - prevPt.y);
     if (dist < 2) return;
 
-    currentStrokePoints.push({ x: coords.x, y: coords.y, p: pressure });
+    currentStrokePoints.push({ x: coords.x, y: coords.y, p: pressure, tx: tiltX, ty: tiltY });
 
-    // Pintar segmento inmediato para 0 latencia visual
+    // Paint stroke segment with pressure-based width
     paintCtx.strokeStyle = strokeColor;
     paintCtx.lineCap = 'round';
     paintCtx.lineJoin = 'round';
@@ -682,7 +710,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (activeTool === 'highlighter') {
       paintCtx.globalCompositeOperation = 'multiply';
-      paintCtx.globalAlpha = 0.15; // Suave opacidad acumulativa al pintar rápido
+      paintCtx.globalAlpha = 0.15;
     } else {
       paintCtx.globalCompositeOperation = 'source-over';
       paintCtx.globalAlpha = 1.0;
@@ -693,7 +721,6 @@ document.addEventListener('DOMContentLoaded', () => {
     paintCtx.lineTo(coords.x, coords.y);
     paintCtx.stroke();
     
-    // Restaurar composite
     paintCtx.globalCompositeOperation = 'source-over';
     paintCtx.globalAlpha = 1.0;
     });
