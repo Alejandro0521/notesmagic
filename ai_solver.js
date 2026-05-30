@@ -155,9 +155,9 @@ const AISolver = (() => {
           text.innerText = 'Falta API Key de Gemini';
         }
       } else {
-        // Para Ollama probamos si responde localmente (ping)
+        // Modo demostración local (sin servidor requerido)
         dot.className = 'status-indicator online';
-        text.innerText = `Ollama Local (${ollamaModel}) Activo`;
+        text.innerText = 'Modo Demostración (Local)';
       }
     }
   }
